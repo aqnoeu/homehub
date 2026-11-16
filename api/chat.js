@@ -1,31 +1,51 @@
-const JSON_HEADERS={"Content-Type":"application/json"};
-export default async function handler(req,res){
-if(req.method!=="POST")return res.status(405).json({error:"Método não permitido."});
-res.setHeader("Cache-Control","no-store");
-const url=process.env.SUPABASE_URL,key=process.env.SUPABASE_PUBLISHABLE_KEY;
-if(!url||!key)return res.status(503).json({error:"Autenticação não configurada no servidor."});
-const token=(req.headers.authorization||"").match(/^Bearer (.+)$/)?.[1];if(!token)return res.status(401).json({error:"Entre na sua conta para conversar."});
-try{
-const check=await fetch(url+"/auth/v1/user",{headers:{"apikey":key,"Authorization":"Bearer "+token}});
-if(!check.ok)return res.status(401).json({error:"Sessão inválida ou expirada."});
-const body=req.body||{};const model=String(body.model||"auto");if(!["auto","groq","openrouter"].includes(model))return res.status(400).json({error:"Modelo inválido."});
-const msgs=body.messages;
-if(!Array.isArray(msgs)||!msgs.length||msgs.length>20||msgs.some(x=>!x||!["user","assistant"].includes(x.role)||typeof x.content!=="string"||x.content.length>12000)||msgs.at(-1).role!=="user")return res.status(400).json({error:"Histórico inválido. Máximo de 20 mensagens."});
-const providers=model==="groq"?["groq"]:model==="openrouter"?["openrouter"]:["groq","openrouter"];
-const system={role:"system",content:"Você é Home Hub, assistente de IA claro, útil, objetivo e respeitoso. Responda preferencialmente em português do Brasil, exceto quando solicitado em outro idioma. Não alegue executar ferramentas não disponíveis."};
-let lastError="Nenhum provedor de IA configurado.";
-for(const provider of providers){
-const apiKey=provider==="groq"?process.env.GROQ_API_KEY:process.env.OPENROUTER_API_KEY;if(!apiKey)continue;
-const endpoint=provider==="groq"?"https://api.groq.com/openai/v1/chat/completions":"https://openrouter.ai/api/v1/chat/completions";
-const selected=provider==="groq"?(process.env.GROQ_MODEL||"llama-3.3-70b-versatile"):(process.env.OPENROUTER_MODEL||"openai/gpt-4o-mini");
-try{
-const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),25000);
-let response;try{response=await fetch(endpoint,{method:"POST",signal:controller.signal,headers:{...JSON_HEADERS,Authorization:"Bearer "+apiKey,...(provider==="openrouter"?{"HTTP-Referer":"https://homehub-ia.vercel.app","X-Title":"Home Hub"}:{})},body:JSON.stringify({model:selected,messages:[system,...msgs],temperature:0.65,max_tokens:1600})});}finally{clearTimeout(timeout)}
-const data=await response.json().catch(()=>({}));if(!response.ok){lastError="Provedor "+provider+" indisponível ("+response.status+").";if(model==="auto"&&[429,500,502,503,504].includes(response.status))continue;break}
-const content=data?.choices?.[0]?.message?.content;if(typeof content!=="string"||!content.trim()){lastError="O provedor retornou uma resposta vazia.";continue}
-return res.status(200).json({content,model:selected,provider});
-}catch(e){lastError="Não foi possível obter uma resposta de "+provider+".";if(model!=="auto")break}
-}
-return res.status(503).json({error:lastError});
-}catch(e){return res.status(500).json({error:"Falha interna na solicitação."})}
+// Home Hub: Cloudflare Workers AI only. No paid-only models, gateways or fallback to external providers.
+const MODELS = Object.freeze({
+  auto: "@cf/qwen/qwen3-30b-a3b-fp8",
+  qwen: "@cf/qwen/qwen3-30b-a3b-fp8",
+  granite: "@cf/ibm-granite/granite-4.0-h-micro",
+  glm: "@cf/zai-org/glm-4.7-flash"
+});
+const MAX_MESSAGES = 12;
+const MAX_CHARS = 5000;
+export default async function handler(req, res) {
+  res.setHeader("Cache-Control", "no-store");
+  if (req.method !== "POST") return res.status(405).json({ error: "Método não permitido." });
+  const base = process.env.SUPABASE_URL, key = process.env.SUPABASE_PUBLISHABLE_KEY;
+  if (!base || !key) return res.status(503).json({ error: "Autenticação não configurada." });
+  const token = (req.headers.authorization || "").match(/^Bearer (.+)$/)?.[1];
+  if (!token) return res.status(401).json({ error: "Entre na sua conta para conversar." });
+  try {
+    const auth = await fetch(base + "/auth/v1/user", { headers: { apikey: key, Authorization: "Bearer " + token } });
+    if (!auth.ok) return res.status(401).json({ error: "Sessão inválida ou expirada." });
+    if (process.env.CLOUDFLARE_FREE_PLAN_CONFIRMED !== "true") {
+      return res.status(503).json({ error: "Para impedir cobranças, confirme primeiro que a conta Cloudflare está no plano Workers Free e defina CLOUDFLARE_FREE_PLAN_CONFIRMED=true na Vercel." });
+    }
+    const account = process.env.CLOUDFLARE_ACCOUNT_ID;
+    const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+    if (!account || !apiToken) return res.status(503).json({ error: "Configure CLOUDFLARE_ACCOUNT_ID e CLOUDFLARE_API_TOKEN na Vercel." });
+    const {model="auto",messages} = req.body || {};
+    if (typeof model !== "string" || !Object.hasOwn(MODELS,model)) return res.status(400).json({ error: "Modelo não permitido no modo gratuito." });
+    if (!Array.isArray(messages) || messages.length<1 || messages.length>MAX_MESSAGES || messages.at(-1)?.role!=="user" || messages.some(m=>!m || !["assistant","user"].includes(m.role) || typeof m.content!=="string" || !m.content.trim() || m.content.length>MAX_CHARS)) {
+      return res.status(400).json({ error: "Histórico inválido ou muito extenso." });
+    }
+    const selected = MODELS[model];
+    const controller = new AbortController();
+    const timer = setTimeout(()=>controller.abort(),25000);
+    let response;
+    try {
+      response = await fetch("https://api.cloudflare.com/client/v4/accounts/"+encodeURIComponent(account)+"/ai/v1/chat/completions", {
+        method:"POST",signal:controller.signal,
+        headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiToken},
+        body:JSON.stringify({model:selected,messages:[{role:"system",content:"Você é o Home Hub, um assistente prestativo, organizado, atencioso e eficiente. Responda de modo claro, próximo, objetivo e respeitoso, preferencialmente em português. Não finja ter executado ações externas."},...messages],max_tokens:550,temperature:0.6})
+      });
+    } finally {clearTimeout(timer);}
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok) {
+      if (response.status===429 || response.status===402 || response.status===403) return res.status(429).json({error:"Limite gratuito atingido ou modelo indisponível para o plano atual. O Home Hub não fará chamadas pagas."});
+      return res.status(502).json({error:"O modelo da Cloudflare não respondeu ("+response.status+")."});
+    }
+    const content=result?.choices?.[0]?.message?.content;
+    if(typeof content!=="string" || !content.trim()) return res.status(502).json({error:"Modelo retornou uma resposta vazia."});
+    return res.status(200).json({content:content.slice(0,60000),model:selected,provider:"cloudflare"});
+  }catch(e){return res.status(500).json({error:e?.name==="AbortError"?"A resposta demorou demais. Tente novamente.":"Não foi possível consultar o modelo."});}
 }
