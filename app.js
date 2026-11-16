@@ -1,5 +1,5 @@
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.95.0";
-const $=id=>document.getElementById(id);const icon="/assets/home-eyes.svg";let supabase=null,user=null,activeChat=null,chats=[],messages=[],busy=false,authMode="login",configured=false;
+const $=id=>document.getElementById(id);const icon="https://raw.githubusercontent.com/aqnoeu/home/main/android/app/src/main/res/drawable-nodpi/home_header_eyes.png";let supabase=null,user=null,activeChat=null,chats=[],messages=[],busy=false,authMode="login",configured=false;
 function notify(s){const e=$("toast");e.textContent=s;e.classList.add("show");clearTimeout(notify.timer);notify.timer=setTimeout(()=>e.classList.remove("show"),3500)}
 function safe(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function setConnection(text,ok){$("connectionText").textContent=text;$("connection").querySelector(".status-dot").style.background=ok?"#00C46A":"#FF6A00"}
