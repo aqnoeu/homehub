@@ -38,3 +38,11 @@ O Home Hub utiliza somente Cloudflare Workers AI. As chaves de API ficam armazen
 Para habilitar respostas, configure as variáveis `CLOUDFLARE_ACCOUNT_ID` e `CLOUDFLARE_API_TOKEN` e **confirme no painel Cloudflare que a conta utiliza Workers Free**, sem faturamento de excedentes. Somente após essa confirmação, configure `CLOUDFLARE_FREE_PLAN_CONFIRMED=true` na Vercel. Enquanto faltar essa confirmação, a API responde com erro claro de configuração em vez de fazer chamadas com custo incerto.
 
 No chat, as falhas são exibidas como aviso persistente, não como resposta gerada pela IA. A imagem da marca foi substituída pelo SVG transparente `aqnoeu/home/android/app/src/main/res/drawable-nodpi/home_header_eyes.png`. Revogue e substitua qualquer token que tenha sido compartilhado em conversas.
+
+## Modelos Workers AI no plano Free
+
+Seletor do chat: **Automático**, **Qwen 3**, **GLM-4.7 Flash**, **Nemotron 3 Super**, **Gemma 4**, **Llama 3.3 70B** e **Granite 4 Micro**. Todos têm IDs `@cf/...` e foram verificados no catálogo e por requisições de teste no projeto Cloudflare. A lista é fechada no servidor; nenhum modelo exclusivo do plano pago pode ser selecionado pelo cliente.
+
+No modo Automático, o servidor identifica palavras-chave da última mensagem para escolher um modelo apropriado (código, raciocínio, explicação, criatividade, rapidez ou conversas gerais). Essa heurística é simples e não é uma classificação por IA. Em falhas transitórias, pode tentar **uma** alternativa igualmente disponível na franquia gratuita. Erros por limite de quota e permissões não acionam substituição paga.
+
+O cabeçalho mostra a franquia **10.000 Neurons/dia** e o consumo reportado pela API nas respostas deste navegador no dia UTC. O contador não inclui outros dispositivos, apps ou chamadas malsucedidas, e **não representa saldo oficial da Cloudflare**; o link do painel Cloudflare permite consultar os números da conta. Nenhum cartão ou forma de pagamento é adicionado pelo Home Hub.
