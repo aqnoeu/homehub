@@ -4,7 +4,7 @@ const modelNames={qwen:"Qwen 3",glm:"GLM 4.7 Flash",nemotron:"Nemotron 3 Super",
 function usageKey(){return "homehub:neurons:"+new Date().toISOString().slice(0,10)}
 function localUsage(){try{return Number(localStorage.getItem(usageKey()))||0}catch{return 0}}
 function updateUsage(){const el=$("usageLocal");if(el)el.textContent=localUsage().toLocaleString("pt-BR",{maximumFractionDigits:2})+" Neurons";}
-function recordUsage(usage){const n=Number(usage?.neurons);if(!Number.isFinite(n)||n<0)return;try{localStorage.setItem(usageKey(),String(localUsage()+n))}catch{}updateUsage();}
+function recordUsage(usage){const n=usage?.neurons;if(typeof n!=="number"||!Number.isFinite(n)||n<0)return;try{localStorage.setItem(usageKey(),String(localUsage()+n))}catch{}updateUsage();}
 function notify(s){const e=$("toast");e.textContent=s;e.classList.add("show");clearTimeout(notify.timer);notify.timer=setTimeout(()=>e.classList.remove("show"),3500)}
 function safe(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function setConnection(text,ok){$("connectionText").textContent=text;$("connection").querySelector(".status-dot").style.background=ok?"#00C46A":"#FF6A00"}
