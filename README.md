@@ -37,4 +37,4 @@ O Home Hub utiliza somente Cloudflare Workers AI. As chaves de API ficam armazen
 
 Para habilitar respostas, configure as variáveis `CLOUDFLARE_ACCOUNT_ID` e `CLOUDFLARE_API_TOKEN` e **confirme no painel Cloudflare que a conta utiliza Workers Free**, sem faturamento de excedentes. Somente após essa confirmação, configure `CLOUDFLARE_FREE_PLAN_CONFIRMED=true` na Vercel. Enquanto faltar essa confirmação, a API responde com erro claro de configuração em vez de fazer chamadas com custo incerto.
 
-No chat, as falhas são exibidas como aviso persistente, não como resposta gerada pela IA. A imagem da marca foi substituída pelo SVG transparente `assets/home-eyes.svg`. Revogue e substitua qualquer token que tenha sido compartilhado em conversas.
+No chat, as falhas são exibidas como aviso persistente, não como resposta gerada pela IA. A imagem da marca foi substituída pelo SVG transparente `aqnoeu/home/android/app/src/main/res/drawable-nodpi/home_header_eyes.png`. Revogue e substitua qualquer token que tenha sido compartilhado em conversas.
