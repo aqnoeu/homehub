@@ -4,3 +4,15 @@
 .message.notice{align-self:flex-start;width:100%;max-width:710px;}
 .message.notice .bubble{padding:14px 18px;background:#30261d;border:1px solid #8b5a29;border-radius:12px;color:#fbd7ab;line-height:1.65;max-width:100%;}
 .chat-subnote{line-height:1.6;}
+
+/* Workers AI Free: usage is recorded locally, never presented as official balance. */
+.usage-bar{display:flex;align-items:center;gap:25px;justify-content:space-between;padding:11px 35px;background:#101b29;border-bottom:1px solid #253447;flex-wrap:wrap}
+.usage-bar>div{display:flex;flex-direction:column;gap:3px}
+.usage-bar strong{font-size:11px;font-weight:700;color:#e0edff}
+.usage-bar span{font-size:10px;color:#91a3b8}
+.usage-bar a{font-size:11px;color:#9fbdff;text-decoration:underline;text-decoration-color:#5474a5;text-underline-offset:3px}
+.usage-bar a:hover{color:white}
+.model-wrap select{max-width:min(320px,45vw);width:100%}
+.model-wrap{min-width:0;max-width:340px}
+@media(max-width:850px){.usage-bar{padding:10px 16px;gap:10px}.usage-bar>div{flex:1;min-width:135px}.usage-bar a{font-size:10px}.model-wrap{max-width:45vw}}
+@media(max-width:520px){.usage-bar{gap:8px;padding:9px 12px}.usage-bar strong{font-size:10px}.usage-bar span{font-size:9px}.usage-bar a{width:100%;font-size:10px}.model-wrap select{max-width:44vw;padding:10px 5px;font-size:11px}}
