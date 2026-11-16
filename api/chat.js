@@ -87,12 +87,13 @@ export default async function handler(req, res) {
       if (result.ok) {
         const content = extractContent(result.data);
         if (content) {
-          const usedNeurons = Number(result.data?.usage?.neurons);
+          const reportedNeurons = result.data?.usage?.neurons;
+          const usedNeurons = typeof reportedNeurons === "number" ? reportedNeurons : null;
           return res.status(200).json({
             content: content.slice(0,60000),
             model: FREE_MODELS[chosen], modelKey: chosen, provider: "cloudflare",
             selection: model, fallback: index > 0,
-            usage: { neurons: Number.isFinite(usedNeurons) && usedNeurons >= 0 ? usedNeurons : null,
+            usage: { neurons: usedNeurons !== null && Number.isFinite(usedNeurons) && usedNeurons >= 0 ? usedNeurons : null,
               inputTokens: Number(result.data?.usage?.prompt_tokens) || null,
               outputTokens: Number(result.data?.usage?.completion_tokens) || null }
           });
