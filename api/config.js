@@ -1,0 +1,1 @@
+export default function handler(req,res){if(req.method!=="GET")return res.status(405).json({error:"Método não permitido"});res.setHeader("Cache-Control","no-store");return res.status(200).json({supabaseUrl:process.env.SUPABASE_URL||"",supabasePublishableKey:process.env.SUPABASE_PUBLISHABLE_KEY||"",aiConfigured:!!(process.env.GROQ_API_KEY||process.env.OPENROUTER_API_KEY)});}
