@@ -184,3 +184,73 @@ targets.forEach(el=>{el.dataset.reveal="";el.classList.add("will-reveal");observ
 }
 }
 initHomeMotion();
+
+/* HOME HUB: story animation is driven by document scroll, never a time-based autoplay. */
+function initScrollStory(){
+  const stage=document.getElementById("homeScrollStage");
+  const thread=document.getElementById("demoThread");
+  const counter=document.getElementById("demoCounter");
+  const progressBar=document.getElementById("demoProgress");
+  const caption=document.getElementById("demoCaption");
+  const typing=document.getElementById("demoTyping");
+  if(!stage||!thread||!counter||!progressBar||!caption||!typing)return;
+  const bubbles=[...thread.querySelectorAll("[data-demo-step]")];
+  const captions=[
+    "Uma conversa começa com uma ideia",
+    "Uma ideia pode ganhar direção",
+    "Compare perspectivas",
+    "Escolha o seu caminho",
+    "Transforme planos em projetos",
+    "Continue de onde parou"
+  ];
+  const motion=window.matchMedia("(prefers-reduced-motion: reduce)");
+  let last=-1,frame=0;
+  const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
+  function update(){
+    frame=0;
+    const reduced=motion.matches;
+    const visible=location.hash===""||location.hash==="#inicio"||location.hash==="#recursos";
+    if(!visible)return;
+    const maxTravel=Math.max(1,stage.offsetHeight-window.innerHeight);
+    const fraction=reduced?1:clamp(-stage.getBoundingClientRect().top/maxTravel,0,1);
+    const phase=fraction*bubbles.length;
+    const index=reduced?bubbles.length-1:clamp(Math.floor(phase),0,bubbles.length-1);
+    stage.style.setProperty("--story-scroll",fraction.toFixed(4));
+    stage.parentElement.style.setProperty("--story-scroll",fraction.toFixed(4));
+    stage.parentElement.style.setProperty("--orb-one-x",(-185*fraction).toFixed(1)+"px");
+    stage.parentElement.style.setProperty("--orb-one-y",(150*fraction).toFixed(1)+"px");
+    stage.parentElement.style.setProperty("--orb-two-x",(160*fraction).toFixed(1)+"px");
+    stage.parentElement.style.setProperty("--orb-two-y",(-100*fraction).toFixed(1)+"px");
+    stage.style.setProperty("--glow-x",(18*fraction).toFixed(1)+"px");
+    stage.style.setProperty("--glow-y",(-32*fraction).toFixed(1)+"px");
+    progressBar.style.transform="scaleX("+fraction.toFixed(4)+")";
+    if(index!==last){
+      bubbles.forEach((bubble,i)=>{
+        const reveal=i<=index;
+        const wasHidden=bubble.hidden;
+        bubble.hidden=!reveal;
+        bubble.classList.toggle("demo-enter",reveal&&wasHidden&&!reduced);
+      });
+      caption.textContent=captions[index];
+      counter.textContent=String(index+1).padStart(2,"0")+" / 06";
+      last=index;
+      thread.scrollTop=thread.scrollHeight;
+    }
+    // A short typing cue accompanies only upcoming assistant answers.
+    const upcoming=index+1;
+    const isAssistantTurn=upcoming<bubbles.length&&upcoming%2===1;
+    typing.hidden=reduced||!isAssistantTurn||(phase-index)<.42||(phase-index)>.93;
+    if(!typing.hidden)thread.scrollTop=thread.scrollHeight;
+  }
+  function schedule(){
+    if(!frame)frame=requestAnimationFrame(update);
+  }
+  motion.addEventListener?.("change",()=>{last=-1;schedule()});
+  window.addEventListener("scroll",schedule,{passive:true});
+  window.addEventListener("resize",schedule,{passive:true});
+  window.addEventListener("hashchange",()=>{last=-1;schedule()});
+  bubbles.forEach(el=>el.hidden=true);
+  typing.hidden=true;
+  schedule();
+}
+initScrollStory();
