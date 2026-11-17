@@ -1,5 +1,5 @@
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.95.0";
-const $=id=>document.getElementById(id);const icon="/home-eyes.svg";let supabase=null,user=null,activeChat=null,chats=[],messages=[],busy=false,authMode="login",configured=false;
+const $=id=>document.getElementById(id);const icon="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAABIBAMAAADMq+AhAAAAMFBMVEX///////////////////////////////////////////////////////////////9Or7hAAAAAEHRSTlMAESIzRFVmd4iZqrvM3e7/dpUBFQAAAbJJREFUeNrtVr9Lw0AUfkkLrmlVXJNzcHGoKDi4VMe66O6if4A4dlOcBAU3Z1dBFJxcpIvVRdHRX8QiTlKaFKdiks/BNM2V9HqtQ6Hct73v3n353r13SYgUFBQUhgZaAje1QnRSSSCDfRlJffIQwK7Fs2wbgL9kSAgU7m0Ab7dcbvrKBhC8bnXfP18CAMA/iimkD/5IPK922586D1Phr7fYhSaJm25FFJwo9ynKTZci0utiQY8MAJ7ZZEdaJK7FAhMtAwiihy3HBBqWUGAzlopy01YpRgYXbZ75aDEezTaHzYyRdVMTCIznuLUwGo2Thg5BBdPxCiK3yxz7kxc4yPD3JLQ+x0+KKRAwE30JZ4cTSOVl7q/RWUCfSdziSjvQcjIlCNqoaRKe285U77loYr0KtMPp2QFJH2I/kBCAMO7DgTZwAWPgbbz7bxdqnQWCh6RrGFSk58A75hctiRNJc2ZPdzIE24WboaxFTmjIdg2qvRPqRtYiqj6KvowlINhgjDG2BjTCho05QJkxxlgBwKfAAfl7l4Qzl4jou0he+CqqFg16sYmIPopEX+qvTEFBYWjxC7bNAK4EHQZAAAAAAElFTkSuQmCC";let supabase=null,user=null,activeChat=null,chats=[],messages=[],busy=false,authMode="login",configured=false;
 const modelNames={qwen:"Qwen 3",glm:"GLM 4.7 Flash",nemotron:"Nemotron 3 Super",gemma:"Gemma 4",llama:"Llama 3.3 70B",granite:"Granite 4 Micro"};
 function usageKey(){return "homehub:neurons:"+new Date().toISOString().slice(0,10)}
 function localUsage(){try{return Number(localStorage.getItem(usageKey()))||0}catch{return 0}}
@@ -43,7 +43,18 @@ renderHistory();notify(all?"Conversas excluídas.":"Conversa excluída.");
 
 function renderMessages(){const el=$("chatMessages");if(!messages.length){el.innerHTML='<div class="chat-empty"><img src="'+icon+'" alt="HOME"><h2>Como posso ajudar?</h2><p>Escolha um modelo e comece sua conversa.</p><div class="chips"><button data-suggest="Me ajude a planejar um novo projeto.">Planejar um projeto ↗</button><button data-suggest="Me explique um tema de forma simples.">Explicar um assunto ↗</button><button data-suggest="Me ajude a revisar um texto.">Revisar um texto ↗</button></div></div>';el.querySelectorAll("[data-suggest]").forEach(b=>b.addEventListener("click",()=>{const x=$("chatInput");x.value=b.dataset.suggest;x.focus();resize()}));return}el.innerHTML=messages.map(m=>'<div class="message '+safe(m.role)+'">'+(m.role==="assistant"?'<img class="message-icon" src="'+icon+'" alt="HOME">':'')+'<div class="bubble">'+safe(m.content)+'</div></div>').join("");el.scrollTop=el.scrollHeight}
 function resize(){const t=$("chatInput");t.style.height="auto";t.style.height=Math.min(170,t.scrollHeight)+"px"}
-async function loadChats(){if(!user||!supabase)return;const {data,error}=await supabase.from("homehub_chats").select("id,title,model,updated_at").order("updated_at",{ascending:false}).limit(60);if(error){notify("Não foi possível carregar conversas: "+error.message);return}chats=data||[];renderHistory()}
+async function loadChats(){
+if(!user||!supabase)return;
+const all=[];let from=0;const batchSize=500;
+while(true){
+const {data,error}=await supabase.from("homehub_chats").select("id,title,model,updated_at").order("updated_at",{ascending:false}).range(from,from+batchSize-1);
+if(error){notify("Não foi possível carregar conversas: "+error.message);return;}
+all.push(...(data||[]));
+if(!data||data.length<batchSize)break;
+from+=batchSize;
+}
+chats=all;renderHistory();
+}
 async function openChat(id){activeChat=id;const c=chats.find(x=>x.id===id);$("chatTitle").textContent=c?.title||"Nova conversa";$("modelSelect").value=c?.model||"auto";messages=[];renderMessages();renderHistory();$("chatPage").querySelector(".sidebar").classList.remove("open");if(!id)return;const {data,error}=await supabase.from("homehub_messages").select("id,role,content,model,created_at").eq("chat_id",id).order("created_at",{ascending:true}).limit(150);if(error){notify("Não foi possível carregar mensagens.");return}if(activeChat===id){messages=data||[];renderMessages()}}
 async function startNew(){activeChat=null;messages=[];await loadModelPreference();$("chatTitle").textContent="Nova conversa";renderHistory();renderMessages();$("chatPage").querySelector(".sidebar").classList.remove("open");$("chatInput").focus()}
 async function submitMessage(ev){ev.preventDefault();const text=$("chatInput").value.trim();if(!text||busy)return;if(!configured){notify("Configuração do Supabase indisponível.");return}if(!user){openAuth();return}busy=true;$("sendButton").disabled=true;$("chatInput").value="";resize();let chatId=activeChat;const selected=$("modelSelect").value;try{
