@@ -217,6 +217,12 @@ function initScrollStory(){
     const index=reduced?bubbles.length-1:clamp(Math.floor(phase),0,bubbles.length-1);
     stage.style.setProperty("--story-scroll",fraction.toFixed(4));
     stage.parentElement.style.setProperty("--story-scroll",fraction.toFixed(4));
+    stage.parentElement.style.setProperty("--orb-one-x",(-185*fraction).toFixed(1)+"px");
+    stage.parentElement.style.setProperty("--orb-one-y",(150*fraction).toFixed(1)+"px");
+    stage.parentElement.style.setProperty("--orb-two-x",(160*fraction).toFixed(1)+"px");
+    stage.parentElement.style.setProperty("--orb-two-y",(-100*fraction).toFixed(1)+"px");
+    stage.style.setProperty("--glow-x",(18*fraction).toFixed(1)+"px");
+    stage.style.setProperty("--glow-y",(-32*fraction).toFixed(1)+"px");
     progressBar.style.transform="scaleX("+fraction.toFixed(4)+")";
     if(index!==last){
       bubbles.forEach((bubble,i)=>{
