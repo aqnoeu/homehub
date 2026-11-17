@@ -151,3 +151,36 @@ async function init(){updateUsage();try{const res=await fetch("/api/config");con
 $("authForm").addEventListener("submit",async e=>{e.preventDefault();if(!supabase){$("authStatus").textContent="Configuração indisponível.";return}const email=$("email").value.trim(),password=$("password").value;$("authSubmit").disabled=true;$("authStatus").textContent="Processando...";try{const {error,data}=authMode==="login"?await supabase.auth.signInWithPassword({email,password}):await supabase.auth.signUp({email,password});if(error)throw Error(error.message);if(authMode==="register"&&!data.session){$("authStatus").textContent="Cadastro enviado! Confirme seu e-mail para acessar.";return}user=data.user||data.session?.user;refreshAuth();await registerWebDevice();await loadChats();await loadModelPreference();closeAuth();if(location.hash==="#conta")loadHomeAccount();notify("Bem-vindo ao Home Hub!");}catch(err){$("authStatus").textContent=err.message}finally{$("authSubmit").disabled=false}});
 $("authSwitch").addEventListener("click",()=>{authMode=authMode==="login"?"register":"login";$("authTitle").textContent=authMode==="login"?"Entre no Home Hub":"Crie sua conta";$("authSubmit").textContent=authMode==="login"?"Entrar":"Criar conta";$("authSwitch").textContent=authMode==="login"?"Não tem conta? Criar conta":"Já tem conta? Entrar";$("authStatus").textContent=""});
 $("accountButton").addEventListener("click",openAuth);$("disableVoiceSync").addEventListener("click",disableVoiceSync);$("deleteVoiceProfile").addEventListener("click",deleteVoiceProfile);$("saveAccount").addEventListener("click",saveHomeAccount);$("reloadDevices").addEventListener("click",loadHomeAccount);$("closeModal").addEventListener("click",closeAuth);$("authModal").addEventListener("click",e=>{if(e.target===$("authModal"))closeAuth()});$("startChat").addEventListener("click",()=>location.hash="chat");$("newChat").addEventListener("click",startNew);$("deleteAllChats").addEventListener("click",()=>deleteChats(chats.map(c=>c.id),true));$("mobileHistory").addEventListener("click",()=>$("chatPage").querySelector(".sidebar").classList.toggle("open"));$("chatForm").addEventListener("submit",submitMessage);$("modelSelect").addEventListener("change",async()=>{if(!activeChat||!user||!supabase)return;const selected=$("modelSelect").value;const {error}=await supabase.from("homehub_chats").update({model:selected}).eq("id",activeChat);if(error)notify("Não foi possível salvar a seleção de modelo.");else{const chat=chats.find(c=>c.id===activeChat);if(chat)chat.model=selected;}});$("chatInput").addEventListener("input",resize);$("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();$("chatForm").requestSubmit()}});window.addEventListener("hashchange",showPage);document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAuth()});init();
+/* Desktop motion: pointer-specific tilt, optional accessibility-friendly animation. */
+function initHomeMotion(){
+const reduced=window.matchMedia("(prefers-reduced-motion: reduce)");
+const finePointer=window.matchMedia("(hover: hover) and (pointer: fine)");
+const panel=document.querySelector("[data-tilt]");
+if(panel&&finePointer.matches&&!reduced.matches){
+let frame=0;
+panel.addEventListener("pointermove",event=>{
+if(frame)return;
+const bounds=panel.getBoundingClientRect();
+const x=(event.clientX-bounds.left)/bounds.width-.5;
+const y=(event.clientY-bounds.top)/bounds.height-.5;
+frame=requestAnimationFrame(()=>{panel.style.setProperty("--tilt-x",(-y*3.5).toFixed(2)+"deg");panel.style.setProperty("--tilt-y",(x*3.5).toFixed(2)+"deg");frame=0;});
+},{passive:true});
+panel.addEventListener("pointerleave",()=>{panel.style.setProperty("--tilt-x","0deg");panel.style.setProperty("--tilt-y","0deg");});
+}
+const toggle=$("desktopSidebarToggle");
+const chat=$("chatPage");
+if(toggle&&chat){
+toggle.addEventListener("click",()=>{
+const collapsed=chat.classList.toggle("sidebar-collapsed");
+toggle.setAttribute("aria-expanded",String(!collapsed));
+toggle.setAttribute("aria-label",collapsed?"Expandir histórico":"Recolher histórico");
+toggle.title=collapsed?"Expandir histórico":"Recolher histórico";
+});
+}
+if("IntersectionObserver" in window&&!reduced.matches){
+const targets=document.querySelectorAll(".section-title, .account-panel");
+const observer=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.isIntersecting){entry.target.classList.add("revealed");entry.target.classList.remove("will-reveal");observer.unobserve(entry.target);}}},{threshold:.1});
+targets.forEach(el=>{el.dataset.reveal="";el.classList.add("will-reveal");observer.observe(el)});
+}
+}
+initHomeMotion();
