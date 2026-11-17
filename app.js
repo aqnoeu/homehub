@@ -211,8 +211,11 @@ function initScrollStory(){
     const reduced=motion.matches;
     const visible=location.hash===""||location.hash==="#inicio"||location.hash==="#recursos";
     if(!visible)return;
-    const maxTravel=Math.max(1,stage.offsetHeight-window.innerHeight);
-    const fraction=reduced?1:clamp(-stage.getBoundingClientRect().top/maxTravel,0,1);
+    const stageTop=stage.getBoundingClientRect().top;
+    // Advance over a compact region while the user scrolls past the hero.
+    // Avoid a 300vh blank section or a sticky stage with huge empty regions.
+    const travel=Math.max(180,Math.min(650,stage.offsetHeight*.78));
+    const fraction=reduced?1:clamp(-stageTop/travel,0,1);
     const phase=fraction*bubbles.length;
     const index=reduced?bubbles.length-1:clamp(Math.floor(phase),0,bubbles.length-1);
     stage.style.setProperty("--story-scroll",fraction.toFixed(4));
