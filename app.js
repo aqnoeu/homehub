@@ -44,9 +44,36 @@ async function loadModelPreference(){
   const key=data?.preferred_model||"auto";
   if(!activeChat&&$("modelSelect").querySelector('option[value="'+key+'"]'))$("modelSelect").value=key;
 }
+async function loadVoiceProfileStatus(){
+  const host=$("accountVoiceStatus");
+  if(!supabase||!user){host.textContent="Entre na Conta HOME para consultar o perfil.";return;}
+  const {data,error}=await supabase.from("home_voice_profiles")
+    .select("sync_enabled,settings,updated_at").eq("user_id",user.id).maybeSingle();
+  if(error){host.textContent="Não foi possível consultar o perfil: "+error.message;return;}
+  if(!data){host.textContent="Nenhum perfil de voz foi salvo na nuvem.";return;}
+  const platforms=Object.keys(data.settings||{}).filter(x=>["android","windows"].includes(x));
+  host.textContent=(data.sync_enabled?"Sincronização autorizada":"Sincronização desativada")+
+    " · Perfil salvo: "+(platforms.length?platforms.join(", "):"nenhum dispositivo")+
+    " · Última atualização: "+(data.updated_at?new Date(data.updated_at).toLocaleString("pt-BR"):"não informada");
+}
+async function disableVoiceSync(){
+  if(!supabase||!user){openAuth();return;}
+  const {error}=await supabase.from("home_voice_profiles").update({sync_enabled:false})
+    .eq("user_id",user.id);
+  if(error)notify("Falha ao desativar: "+error.message);else notify("Sincronização de voz desativada.");
+  await loadVoiceProfileStatus();
+}
+async function deleteVoiceProfile(){
+  if(!supabase||!user){openAuth();return;}
+  if(!confirm("Apagar da Conta HOME o perfil de voz salvo? As cópias locais permanecerão nos dispositivos."))return;
+  const {error}=await supabase.from("home_voice_profiles").delete().eq("user_id",user.id);
+  if(error)notify("Falha ao apagar: "+error.message);else notify("Perfil de voz na nuvem apagado.");
+  await loadVoiceProfileStatus();
+}
 async function loadHomeAccount(){
   if(!supabase||!user){$("accountIdentity").textContent="Entre na sua conta HOME para gerenciar os dispositivos."; $("accountDevices").textContent="Entre para consultar os dispositivos.";return;}
   $("accountIdentity").textContent="Conectado: "+(user.email||"Sua conta HOME");
+  loadVoiceProfileStatus();
   const [{data:preferences,error:prefError},{data:devices,error:devError}]=await Promise.all([
     supabase.from("home_preferences").select("*").eq("user_id",user.id).maybeSingle(),
     supabase.from("home_devices").select("id,display_name,platform,last_seen_at").order("last_seen_at",{ascending:false}).limit(100)
@@ -84,4 +111,4 @@ async function saveHomeAccount(){
 async function init(){updateUsage();try{const res=await fetch("/api/config");const c=await res.json();if(!res.ok||!c.supabaseUrl||!c.supabasePublishableKey)throw Error("Configuração do Supabase ausente");supabase=createClient(c.supabaseUrl,c.supabasePublishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});configured=true;const {data}=await supabase.auth.getUser();user=data?.user||null;refreshAuth();if(user){await registerWebDevice();await loadChats();await loadModelPreference();}supabase.auth.onAuthStateChange((_event,session)=>{const before=user?.id;user=session?.user||null;refreshAuth();if(user&&user.id!==before){registerWebDevice();loadChats();loadModelPreference();if(location.hash==="#conta")loadHomeAccount();}if(!user){chats=[];messages=[];activeChat=null;renderHistory();renderMessages()}});$("chatNote").textContent=c.aiConfigured?"Pronto para conversar com os modelos Cloudflare.":"IA indisponível: "+(c.aiStatus||"configure o Workers AI na Vercel"); }catch(e){setConnection("Indisponível",false);notify(e.message)}showPage()}
 $("authForm").addEventListener("submit",async e=>{e.preventDefault();if(!supabase){$("authStatus").textContent="Configuração indisponível.";return}const email=$("email").value.trim(),password=$("password").value;$("authSubmit").disabled=true;$("authStatus").textContent="Processando...";try{const {error,data}=authMode==="login"?await supabase.auth.signInWithPassword({email,password}):await supabase.auth.signUp({email,password});if(error)throw Error(error.message);if(authMode==="register"&&!data.session){$("authStatus").textContent="Cadastro enviado! Confirme seu e-mail para acessar.";return}user=data.user||data.session?.user;refreshAuth();await registerWebDevice();await loadChats();await loadModelPreference();closeAuth();if(location.hash==="#conta")loadHomeAccount();notify("Bem-vindo ao Home Hub!");}catch(err){$("authStatus").textContent=err.message}finally{$("authSubmit").disabled=false}});
 $("authSwitch").addEventListener("click",()=>{authMode=authMode==="login"?"register":"login";$("authTitle").textContent=authMode==="login"?"Entre no Home Hub":"Crie sua conta";$("authSubmit").textContent=authMode==="login"?"Entrar":"Criar conta";$("authSwitch").textContent=authMode==="login"?"Não tem conta? Criar conta":"Já tem conta? Entrar";$("authStatus").textContent=""});
-$("accountButton").addEventListener("click",openAuth);$("saveAccount").addEventListener("click",saveHomeAccount);$("reloadDevices").addEventListener("click",loadHomeAccount);$("closeModal").addEventListener("click",closeAuth);$("authModal").addEventListener("click",e=>{if(e.target===$("authModal"))closeAuth()});$("startChat").addEventListener("click",()=>location.hash="chat");$("newChat").addEventListener("click",startNew);$("mobileHistory").addEventListener("click",()=>$("chatPage").querySelector(".sidebar").classList.toggle("open"));$("chatForm").addEventListener("submit",submitMessage);$("modelSelect").addEventListener("change",async()=>{if(!activeChat||!user||!supabase)return;const selected=$("modelSelect").value;const {error}=await supabase.from("homehub_chats").update({model:selected}).eq("id",activeChat);if(error)notify("Não foi possível salvar a seleção de modelo.");else{const chat=chats.find(c=>c.id===activeChat);if(chat)chat.model=selected;}});$("chatInput").addEventListener("input",resize);$("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();$("chatForm").requestSubmit()}});window.addEventListener("hashchange",showPage);document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAuth()});init();
+$("accountButton").addEventListener("click",openAuth);$("disableVoiceSync").addEventListener("click",disableVoiceSync);$("deleteVoiceProfile").addEventListener("click",deleteVoiceProfile);$("saveAccount").addEventListener("click",saveHomeAccount);$("reloadDevices").addEventListener("click",loadHomeAccount);$("closeModal").addEventListener("click",closeAuth);$("authModal").addEventListener("click",e=>{if(e.target===$("authModal"))closeAuth()});$("startChat").addEventListener("click",()=>location.hash="chat");$("newChat").addEventListener("click",startNew);$("mobileHistory").addEventListener("click",()=>$("chatPage").querySelector(".sidebar").classList.toggle("open"));$("chatForm").addEventListener("submit",submitMessage);$("modelSelect").addEventListener("change",async()=>{if(!activeChat||!user||!supabase)return;const selected=$("modelSelect").value;const {error}=await supabase.from("homehub_chats").update({model:selected}).eq("id",activeChat);if(error)notify("Não foi possível salvar a seleção de modelo.");else{const chat=chats.find(c=>c.id===activeChat);if(chat)chat.model=selected;}});$("chatInput").addEventListener("input",resize);$("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();$("chatForm").requestSubmit()}});window.addEventListener("hashchange",showPage);document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAuth()});init();
