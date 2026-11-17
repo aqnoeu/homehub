@@ -141,10 +141,10 @@
 .home-hero h1 span{background:none!important;-webkit-text-fill-color:currentColor;color:#f5f8ff!important}
 .home-hero h1{font-size:clamp(45px,5.2vw,82px);line-height:1.09;letter-spacing:-.065em}
 .home-hero .hero-copy>p{max-width:530px;color:#acb9c9}
-.home-hero .hero-glow{position:absolute;z-index:0;pointer-events:none;inset:0;transform:translate3d(calc(var(--story-scroll)*18px),calc(var(--story-scroll)*-32px),0)}
+.home-hero .hero-glow{position:absolute;z-index:0;pointer-events:none;inset:0;transform:translate3d(var(--glow-x,0px),var(--glow-y,0px),0)}
 .home-page .ambient-orb{animation:none!important;transition:none;will-change:transform}
-.home-page .ambient-orb-one{transform:translate3d(calc(var(--story-scroll)*-185px),calc(var(--story-scroll)*150px),0)}
-.home-page .ambient-orb-two{transform:translate3d(calc(var(--story-scroll)*160px),calc(var(--story-scroll)*-100px),0)}
+.home-page .ambient-orb-one{transform:translate3d(var(--orb-one-x,0px),var(--orb-one-y,0px),0)}
+.home-page .ambient-orb-two{transform:translate3d(var(--orb-two-x,0px),var(--orb-two-y,0px),0)}
 .scroll-invitation{display:flex;align-items:center;gap:12px;color:#8498af;font-size:12px;letter-spacing:.02em;margin-top:32px}
 .scroll-invitation-line{display:block;width:30px;height:1px;background:#7896b9}
 .demo-panel{position:relative;z-index:2;min-height:0!important;height:min(535px,76svh);padding:26px!important;gap:0!important;display:flex;flex-direction:column}
