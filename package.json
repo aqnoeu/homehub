@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/sync-downloads.mjs"
+    "build": "node scripts/sync-downloads.mjs && node scripts/prepare-static.mjs"
   },
   "dependencies": {
     "@vercel/blob": "2.9.0"
