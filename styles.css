@@ -418,3 +418,41 @@ main:has(#homePage:not(.hidden)) > footer{
 @media(prefers-reduced-motion:reduce){
   main:has(#homePage:not(.hidden)) .eyes-gradient{transform:none!important}
 }
+
+/* HOME brand asset: locally served vector traced from the original HOME eye PNG.
+   Separate identical images retain the one-eye blink without distorting the shape. */
+.happy-eyes{
+  --eye-gap:clamp(28px,4vw,56px);
+  display:flex!important;
+  justify-content:center;
+  align-items:center;
+  gap:var(--eye-gap);
+  width:clamp(230px,32vw,390px);
+  height:auto;
+  aspect-ratio:2.25/1;
+  filter:drop-shadow(0 15px 34px #a3bfe20c);
+}
+.happy-eyes .happy-eye{
+  display:block;
+  width:calc((100% - var(--eye-gap))/2)!important;
+  flex:0 0 calc((100% - var(--eye-gap))/2)!important;
+  height:auto!important;
+  aspect-ratio:35 / 38;
+  object-fit:contain;
+  background:none!important;
+  border:0;
+  transform-origin:50% 50%;
+  will-change:transform;
+}
+.happy-eyes.is-blinking .happy-eye-left{
+  animation:home-official-eye-wink .43s cubic-bezier(.4,0,.2,1) both!important;
+}
+@keyframes home-official-eye-wink{
+  0%,100%{transform:scaleY(1)}
+  45%,57%{transform:scaleY(.045)}
+}
+@media(max-width:850px){.happy-eyes{width:clamp(210px,50vw,350px);--eye-gap:clamp(28px,6vw,52px)}}
+@media(max-width:520px){.happy-eyes{width:min(72vw,330px);--eye-gap:clamp(24px,7vw,44px)}}
+@media(prefers-reduced-motion:reduce){
+  .happy-eyes.is-blinking .happy-eye-left{animation:none!important}
+}
