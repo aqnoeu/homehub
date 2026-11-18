@@ -357,3 +357,36 @@
  .story-chat.hero-panel{height:470px}
  .happy-eyes.is-blinking .happy-eye-left{animation:none!important}
 }
+
+/* Fine-tuning: vector eyes keep their curved HOME silhouette at every resolution. */
+.happy-eyes{width:clamp(230px,28vw,350px);height:auto;aspect-ratio:256 / 144;display:block;filter:drop-shadow(0 15px 34px #a3bfe20c)}
+.happy-eyes-svg{display:block;width:100%;height:100%;overflow:visible}
+.happy-eyes-svg .happy-eye-left,.happy-eyes-svg .happy-eye-right{transform-box:view-box;transform-origin:center;transform:none}
+.happy-eyes.is-blinking .happy-eyes-svg .happy-eye-left{animation:home-vector-wink .43s cubic-bezier(.4,0,.2,1) both}
+@keyframes home-vector-wink{
+ 0%,100%{transform:scaleY(1)}
+ 45%,57%{transform:scaleY(.045)}
+}
+@media(max-width:850px){
+ .happy-eyes{width:clamp(210px,47vw,320px)}
+ /* The card needs a clear breathing gap below title, copy and CTA. */
+ .story-frame{row-gap:clamp(50px,7.5svh,82px)!important}
+ .story-intro{align-self:end}
+ .story-chat.hero-panel{align-self:start}
+ .story-section{height:215svh;min-height:980px}
+}
+@media(max-width:520px){
+ .happy-eyes{width:min(70vw,300px)}
+ .story-frame{row-gap:clamp(54px,8svh,92px)!important;padding:24px 16px 35px!important}
+ .story-intro p{margin-bottom:19px}
+ .story-intro .primary{margin-top:5px}
+ .story-section{height:235svh;min-height:1000px}
+}
+@media(max-height:740px) and (max-width:850px){
+ .story-frame{row-gap:36px!important;align-content:center}
+ .story-chat.hero-panel{height:min(390px,46svh);min-height:225px}
+}
+@media(prefers-reduced-motion:reduce){
+ .happy-eyes.is-blinking .happy-eyes-svg .happy-eye-left{animation:none!important}
+ .story-frame{height:auto!important;min-height:0!important}
+}
