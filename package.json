@@ -1,0 +1,12 @@
+{
+  "name": "homehub",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/sync-downloads.mjs"
+  },
+  "dependencies": {
+    "@vercel/blob": "2.9.0"
+  }
+}
