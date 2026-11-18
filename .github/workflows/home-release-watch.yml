@@ -1,0 +1,39 @@
+name: Detect verified HOME releases
+on:
+  schedule:
+    - cron: '15 11 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  update-home:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Identify complete signed HOME release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/check-home-release.mjs
+      - name: Propose version update
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ ! -f .home-new-version ]; then
+            echo 'HOME downloads already up to date'
+            exit 0
+          fi
+          version="$(cat .home-new-version)"
+          branch="updates/home-downloads-${version}"
+          if gh pr list --state open --head "$branch" --json number --jq 'length' | grep -q '^1$'; then
+            echo 'Update PR already open'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c "$branch"
+          git add scripts/sync-downloads.mjs api/download.js index.html DOWNLOADS.md
+          git commit -m "chore(downloads): propose HOME ${version}"
+          git push -u origin "$branch"
+          gh pr create --base main --head "$branch" --title "Atualizar downloads HOME para ${version}" --body 'Detectada uma versão completa com hashes SHA-256 oficiais. A Vercel espelhará os arquivos na prévia e verificará integridade. **Aprovar somente após confirmar que a prévia está READY e que os três downloads funcionam**. A produção continuará servindo a versão anterior até o merge.'
