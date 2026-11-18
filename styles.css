@@ -270,3 +270,90 @@
  .home-scroll-stage .hero-copy>p{display:block}
  .home-scroll-stage .demo-panel{height:300px!important}
 }
+
+/* HOME HUB 2026 — a clear four-act scroll sequence: eyes, identity, chat, features. */
+.home-experience{isolation:isolate!important;overflow:visible!important;min-height:0!important;position:relative;background:#080f19}
+.eyes-opening{height:175svh;position:relative;isolation:isolate}
+.eyes-sticky{height:100svh;min-height:480px;position:sticky;top:0;display:grid;place-items:center;overflow:hidden;background:radial-gradient(ellipse 75% 65% at 52% 36%,#152b4c 0%,#101d35 35%,#09121f 75%,#070d17 100%)}
+.eyes-sticky:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(150deg,#172c4b16 0%,transparent 60%,#a26d3a0d 100%)}
+.eyes-gradient{position:absolute;width:min(80vw,780px);aspect-ratio:1;filter:blur(90px);border-radius:50%;opacity:.3;pointer-events:none;will-change:transform}
+.eyes-gradient-blue{left:-20%;top:-32%;background:#2a5da6;transform:translate3d(var(--blue-x,0px),var(--blue-y,0px),0)}
+.eyes-gradient-warm{right:-24%;bottom:-64%;background:#99613e;opacity:.16;transform:translate3d(var(--warm-x,0px),var(--warm-y,0px),0)}
+.eyes-center{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transform:translateY(-2vh);width:min(92vw,900px)}
+.happy-eyes{width:clamp(210px,27vw,330px);aspect-ratio:128 / 72;display:flex;align-items:stretch;justify-content:stretch;filter:drop-shadow(0 12px 35px #a3bfe20e)}
+.happy-eye{flex:1;width:50%;height:100%;display:block;background-image:var(--eyes-art);background-size:200% 100%;background-repeat:no-repeat;transform-origin:center;will-change:transform}
+.happy-eye-left{background-position:left center}
+.happy-eye-right{background-position:right center}
+.happy-eyes.is-blinking .happy-eye-left{animation:home-eye-blink .43s ease-in-out 1}
+.eyes-wordmark{font-size:clamp(45px,8.8vw,112px);font-weight:800;letter-spacing:-.075em;line-height:1.08;opacity:0;transform:translateY(34px);will-change:transform,opacity;color:#f8fbff;margin-top:8px}
+.eyes-wordmark span:last-child{font-weight:450;color:#a9bacf}
+.eyes-tagline{opacity:0;transform:translateY(16px);font-size:clamp(15px,1.65vw,20px);letter-spacing:-.025em;color:#afc0d5;margin:15px 0 0}
+.eyes-scroll-hint{position:absolute;z-index:3;bottom:clamp(26px,5vh,54px);display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#a4b6cb;opacity:1;transform:translateY(0)}
+.eyes-scroll-hint span{height:25px;width:14px;border:1px solid #8ca4c5;border-radius:10px;position:relative}
+.eyes-scroll-hint span:after{content:"";width:2px;height:5px;position:absolute;left:5px;top:5px;background:#9fb6d3;border-radius:2px}
+@keyframes home-eye-blink{0%,100%{transform:scaleY(1)}43%,57%{transform:scaleY(.035)}}
+.story-section{height:205svh;min-height:1050px;position:relative;background:linear-gradient(180deg,#09121f,#0c1624 55%,#0b111a);isolation:isolate}
+.story-frame{position:sticky;top:0;height:100svh;min-height:580px;width:min(1220px,100%);padding:clamp(20px,4vw,60px);margin:0 auto;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(20px,5vw,80px);align-items:center}
+.story-intro{max-width:450px;min-width:0}
+.story-intro h2{font-size:clamp(38px,4.7vw,66px);line-height:1.12;letter-spacing:-.06em;margin:20px 0}
+.story-intro h2 span{color:#aec9ec}
+.story-intro p{color:#9eb0c7;font-size:15px;line-height:1.8;margin-bottom:29px}
+.story-chat.hero-panel{width:100%;height:min(560px,76svh);min-height:360px;max-width:650px;min-width:0;display:flex;flex-direction:column;gap:0;justify-self:end;padding:25px;transform:none!important;overflow:hidden;background:linear-gradient(155deg,#19283a,#0e1928)}
+.story-chat .panel-top{padding-bottom:17px;border-bottom:1px solid #ffffff12;flex:0 0 auto}
+.story-chat .panel-state{display:flex;align-items:center;gap:8px}
+.story-chat .demo-thread{justify-content:flex-start;overflow-y:auto;flex:1;min-height:0;padding:17px 2px;scrollbar-width:thin}
+.story-chat .demo-panel-foot{flex:0 0 auto}
+.story-chat .panel-input{flex:0 0 auto;margin-top:7px}
+.story-chat .demo-progress{flex:0 0 auto}
+.story-section .demo-message{width:fit-content}
+.story-section .demo-message[hidden],.story-section .demo-typing[hidden]{display:none!important}
+.story-section .demo-typing{margin-top:7px}
+.features{position:relative;background:#0b111a;max-width:none!important;margin:0!important;padding:85px max(5%,calc((100% - 1200px)/2)) 95px!important;z-index:2}
+.features .feature-grid{max-width:1200px;margin-left:auto;margin-right:auto}
+.features .section-title{max-width:1200px;margin-left:auto;margin-right:auto}
+@media(max-width:850px){
+ .eyes-opening{height:165svh}
+ .eyes-sticky{min-height:0;height:100svh}
+ .happy-eyes{width:clamp(195px,45vw,295px)}
+ .eyes-wordmark{font-size:clamp(43px,9vw,72px)}
+ .story-section{height:190svh;min-height:880px}
+ .story-frame{grid-template-columns:1fr;height:100svh;min-height:0;gap:13px;align-content:center;padding:24px 18px}
+ .story-intro{max-width:620px}
+ .story-intro h2{font-size:clamp(30px,5.7vw,44px);margin:9px 0}
+ .story-intro p{font-size:12px;line-height:1.5;margin:0 0 12px}
+ .story-intro .primary{padding:10px 15px;font-size:12px}
+ .story-chat.hero-panel{justify-self:stretch;max-width:none;height:min(475px,53svh);min-height:270px;padding:17px}
+ .story-chat .demo-thread{gap:8px;padding:10px 1px}
+ .story-chat .demo-bubble{font-size:11px;padding:9px 11px}
+ .features{padding:65px 18px 75px!important}
+}
+@media(max-width:520px){
+ .eyes-opening{height:155svh}
+ .happy-eyes{width:min(64vw,275px)}
+ .eyes-wordmark{font-size:clamp(41px,11vw,62px)}
+ .eyes-tagline{font-size:14px}
+ .story-section{height:215svh;min-height:860px}
+ .story-frame{padding:12px 15px;gap:10px}
+ .story-intro h2{font-size:clamp(26px,7vw,36px);margin:5px 0}
+ .story-intro p{font-size:11px;line-height:1.45}
+ .story-intro .primary{padding:9px 13px}
+ .story-chat.hero-panel{height:min(460px,55svh);min-height:260px;padding:13px}
+ .story-chat .panel-top{padding-bottom:9px}
+ .story-chat .demo-thread{gap:6px;padding:9px 1px}
+ .story-chat .demo-bubble{font-size:10px;padding:7px 9px}
+ .story-chat .demo-panel-foot{font-size:10px}
+ .story-chat .panel-input{padding:7px 9px;font-size:10px}
+}
+@media(max-height:650px) and (max-width:850px){
+ .story-intro p{display:none}
+ .story-chat.hero-panel{height:54svh;min-height:225px}
+ .story-intro h2{font-size:25px}
+}
+@media(prefers-reduced-motion:reduce){
+ .eyes-opening,.story-section{height:auto!important;min-height:0!important}
+ .eyes-sticky,.story-frame{position:relative!important;top:auto!important;height:auto!important;min-height:0!important;padding-top:70px;padding-bottom:70px}
+ .eyes-sticky{min-height:70svh!important}
+ .eyes-wordmark,.eyes-tagline{opacity:1!important;transform:none!important}
+ .story-chat.hero-panel{height:470px}
+ .happy-eyes.is-blinking .happy-eye-left{animation:none!important}
+}
