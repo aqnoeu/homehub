@@ -488,3 +488,7 @@ main:has(#homePage:not(.hidden)) > footer{
 @media(prefers-reduced-motion:reduce){
   .happy-eyes.is-blinking .homehub-test-eye-left{animation:none!important}
 }
+
+/* Home Hub own-hosted download distribution */
+.downloads-footnote{margin:24px 0 0;color:#9aaec4;line-height:1.7;font-size:12px}
+.download-card a:focus-visible{outline:2px solid #a8caff;outline-offset:4px}
