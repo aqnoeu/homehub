@@ -456,3 +456,35 @@ main:has(#homePage:not(.hidden)) > footer{
 @media(prefers-reduced-motion:reduce){
   .happy-eyes.is-blinking .happy-eye-left{animation:none!important}
 }
+
+/* Olhos Hub Test: original user-provided Figma export, full precision vector.
+   The SVG lives inline on the site for independent left-eye animation. */
+.happy-eyes{
+  display:block!important;
+  width:clamp(230px,32vw,420px);
+  max-width:100%;
+  height:auto;
+  aspect-ratio:657 / 328;
+}
+.happy-eyes .homehub-test-eyes{
+  display:block;
+  width:100%;
+  height:100%;
+  overflow:visible;
+}
+.homehub-test-eye-left,.homehub-test-eye-right{
+  transform-box:fill-box;
+  transform-origin:center;
+}
+.happy-eyes.is-blinking .homehub-test-eye-left{
+  animation:homehub-test-wink .76s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes homehub-test-wink{
+  0%,100%{transform:scaleY(1)}
+  39%,61%{transform:scaleY(.035)}
+}
+@media(max-width:850px){.happy-eyes{width:clamp(210px,50vw,370px)}}
+@media(max-width:520px){.happy-eyes{width:min(72vw,340px)}}
+@media(prefers-reduced-motion:reduce){
+  .happy-eyes.is-blinking .homehub-test-eye-left{animation:none!important}
+}
