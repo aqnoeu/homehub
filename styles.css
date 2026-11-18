@@ -390,3 +390,31 @@
  .happy-eyes.is-blinking .happy-eyes-svg .happy-eye-left{animation:none!important}
  .story-frame{height:auto!important;min-height:0!important}
 }
+
+/* HOME continuous atmospheric gradient
+   One background is painted by main across the opening, story, features and footer.
+   Child chapters remain transparent so no hard horizontal color break appears. */
+main:has(#homePage:not(.hidden)){
+  background:
+    radial-gradient(ellipse 90% 26% at 50% 12%,rgba(35,72,126,.62) 0%,rgba(22,43,76,.27) 55%,transparent 100%),
+    radial-gradient(ellipse 95% 31% at 87% 63%,rgba(41,66,108,.21) 0%,transparent 90%),
+    radial-gradient(ellipse 75% 25% at 12% 85%,rgba(44,72,105,.12) 0%,transparent 90%),
+    linear-gradient(180deg,#101e35 0%,#10223c 17%,#0c1a30 43%,#0d192b 68%,#0a1423 88%,#080f19 100%);
+  background-repeat:no-repeat;
+}
+main:has(#homePage:not(.hidden)) .home-experience,
+main:has(#homePage:not(.hidden)) .eyes-sticky,
+main:has(#homePage:not(.hidden)) .story-section,
+main:has(#homePage:not(.hidden)) .features,
+main:has(#homePage:not(.hidden)) > footer{
+  background:transparent!important;
+}
+main:has(#homePage:not(.hidden)) .eyes-sticky::after{
+  background:linear-gradient(150deg,rgba(23,44,75,.05),transparent 70%);
+}
+main:has(#homePage:not(.hidden)) > footer{
+  border-top-color:rgba(133,162,204,.13);
+}
+@media(prefers-reduced-motion:reduce){
+  main:has(#homePage:not(.hidden)) .eyes-gradient{transform:none!important}
+}
