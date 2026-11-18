@@ -185,75 +185,78 @@ targets.forEach(el=>{el.dataset.reveal="";el.classList.add("will-reveal");observ
 }
 initHomeMotion();
 
-/* HOME HUB: story animation is driven by document scroll, never a time-based autoplay. */
-function initScrollStory(){
-  const stage=document.getElementById("homeScrollStage");
-  const thread=document.getElementById("demoThread");
-  const counter=document.getElementById("demoCounter");
-  const progressBar=document.getElementById("demoProgress");
-  const caption=document.getElementById("demoCaption");
-  const typing=document.getElementById("demoTyping");
-  if(!stage||!thread||!counter||!progressBar||!caption||!typing)return;
-  const bubbles=[...thread.querySelectorAll("[data-demo-step]")];
-  const captions=[
-    "Uma conversa começa com uma ideia",
-    "Uma ideia pode ganhar direção",
-    "Compare perspectivas",
-    "Escolha o seu caminho",
-    "Transforme planos em projetos",
-    "Continue de onde parou"
-  ];
-  const motion=window.matchMedia("(prefers-reduced-motion: reduce)");
-  let last=-1,frame=0;
-  const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
-  function update(){
-    frame=0;
-    const reduced=motion.matches;
-    const visible=location.hash===""||location.hash==="#inicio"||location.hash==="#recursos";
-    if(!visible)return;
-    const stageTop=stage.getBoundingClientRect().top;
-    // Advance over a compact region while the user scrolls past the hero.
-    // Avoid a 300vh blank section or a sticky stage with huge empty regions.
-    const travel=Math.max(180,Math.min(650,stage.offsetHeight*.78));
-    const fraction=reduced?1:clamp(-stageTop/travel,0,1);
-    const phase=fraction*bubbles.length;
-    const index=reduced?bubbles.length-1:clamp(Math.floor(phase),0,bubbles.length-1);
-    stage.style.setProperty("--story-scroll",fraction.toFixed(4));
-    stage.parentElement.style.setProperty("--story-scroll",fraction.toFixed(4));
-    stage.parentElement.style.setProperty("--orb-one-x",(-185*fraction).toFixed(1)+"px");
-    stage.parentElement.style.setProperty("--orb-one-y",(150*fraction).toFixed(1)+"px");
-    stage.parentElement.style.setProperty("--orb-two-x",(160*fraction).toFixed(1)+"px");
-    stage.parentElement.style.setProperty("--orb-two-y",(-100*fraction).toFixed(1)+"px");
-    stage.style.setProperty("--glow-x",(18*fraction).toFixed(1)+"px");
-    stage.style.setProperty("--glow-y",(-32*fraction).toFixed(1)+"px");
-    progressBar.style.transform="scaleX("+fraction.toFixed(4)+")";
-    if(index!==last){
-      bubbles.forEach((bubble,i)=>{
-        const reveal=i<=index;
-        const wasHidden=bubble.hidden;
-        bubble.hidden=!reveal;
-        bubble.classList.toggle("demo-enter",reveal&&wasHidden&&!reduced);
-      });
-      caption.textContent=captions[index];
-      counter.textContent=String(index+1).padStart(2,"0")+" / 06";
-      last=index;
-      thread.scrollTop=thread.scrollHeight;
-    }
-    // A short typing cue accompanies only upcoming assistant answers.
-    const upcoming=index+1;
-    const isAssistantTurn=upcoming<bubbles.length&&upcoming%2===1;
-    typing.hidden=reduced||!isAssistantTurn||(phase-index)<.42||(phase-index)>.93;
-    if(!typing.hidden)thread.scrollTop=thread.scrollHeight;
-  }
-  function schedule(){
-    if(!frame)frame=requestAnimationFrame(update);
-  }
-  motion.addEventListener?.("change",()=>{last=-1;schedule()});
-  window.addEventListener("scroll",schedule,{passive:true});
-  window.addEventListener("resize",schedule,{passive:true});
-  window.addEventListener("hashchange",()=>{last=-1;schedule()});
-  bubbles.forEach(el=>el.hidden=true);
-  typing.hidden=true;
-  schedule();
+
+/* Separate scroll chapters: opening eyes + identity, then chat demonstration. */
+function initHomeExperience(){
+ const opening=document.getElementById("eyesOpening");
+ const story=document.getElementById("storySection");
+ const eyes=document.querySelector(".happy-eyes");
+ const wordmark=document.getElementById("eyesWordmark");
+ const tagline=document.getElementById("eyesTagline");
+ const hint=document.querySelector(".eyes-scroll-hint");
+ const thread=document.getElementById("demoThread");
+ const progressBar=document.getElementById("demoProgress");
+ const caption=document.getElementById("demoCaption");
+ const counter=document.getElementById("demoCounter");
+ const typing=document.getElementById("demoTyping");
+ if(!opening||!story||!eyes||!wordmark||!tagline||!thread||!progressBar||!caption||!counter||!typing)return;
+ const bubbles=[...thread.querySelectorAll("[data-demo-step]")];
+ const captions=["Uma conversa começa com uma ideia","Organize o que importa","Mais de uma perspectiva","Escolha seu caminho","Da ideia ao projeto","Pronto para continuar"];
+ const motion=window.matchMedia("(prefers-reduced-motion: reduce)");
+ const clamp=(value,min=0,max=1)=>Math.min(max,Math.max(min,value));
+ let frame=0,last=-1,blinked=false;
+ const stageProgress=section=>{
+   const distance=Math.max(1,section.offsetHeight-window.innerHeight);
+   return clamp(-section.getBoundingClientRect().top/distance);
+ };
+ function update(){
+   frame=0;
+   const reduced=motion.matches;
+   if(!document.getElementById("homePage")||document.getElementById("homePage").classList.contains("hidden"))return;
+   const intro=reduced?1:stageProgress(opening);
+   const chat=reduced?1:stageProgress(story);
+   const reveal=clamp((intro-.24)/.47);
+   const captionReveal=clamp((intro-.45)/.35);
+   wordmark.style.opacity=String(reveal);
+   wordmark.style.transform="translateY("+((1-reveal)*34).toFixed(1)+"px)";
+   tagline.style.opacity=String(captionReveal);
+   tagline.style.transform="translateY("+((1-captionReveal)*16).toFixed(1)+"px)";
+   hint.style.opacity=String(1-clamp(intro*4));
+   opening.style.setProperty("--blue-x",(-85*intro).toFixed(1)+"px");
+   opening.style.setProperty("--blue-y",(60*intro).toFixed(1)+"px");
+   opening.style.setProperty("--warm-x",(72*intro).toFixed(1)+"px");
+   opening.style.setProperty("--warm-y",(-50*intro).toFixed(1)+"px");
+   // Blink once per forward crossing; reset only when scrolling back to the beginning.
+   if(!reduced&&!blinked&&intro>=.18){
+     blinked=true;
+     eyes.classList.remove("is-blinking");
+     void eyes.offsetWidth;
+     eyes.classList.add("is-blinking");
+   }else if(intro<.07&&blinked){blinked=false;eyes.classList.remove("is-blinking");}
+   const step=reduced?bubbles.length-1:clamp(Math.floor(chat*bubbles.length),0,bubbles.length-1);
+   const phase=chat*bubbles.length;
+   progressBar.style.transform="scaleX("+chat.toFixed(4)+")";
+   if(step!==last){
+     bubbles.forEach((bubble,i)=>{
+       const wasHidden=bubble.hidden;
+       bubble.hidden=i>step;
+       bubble.classList.toggle("demo-enter",i<=step&&wasHidden&&!reduced);
+     });
+     caption.textContent=captions[step];
+     counter.textContent=String(step+1).padStart(2,"0")+" / 06";
+     last=step;
+     thread.scrollTop=thread.scrollHeight;
+   }
+   const next=step+1;
+   typing.hidden=reduced||next>=bubbles.length||next%2!==1||(phase-step)<.52||(phase-step)>.92;
+ }
+ function schedule(){if(!frame)frame=requestAnimationFrame(update)}
+ bubbles.forEach(b=>b.hidden=true);
+ typing.hidden=true;
+ window.addEventListener("scroll",schedule,{passive:true});
+ window.addEventListener("resize",schedule,{passive:true});
+ window.addEventListener("hashchange",()=>{last=-1;schedule()});
+ motion.addEventListener?.("change",()=>{last=-1;schedule()});
+ schedule();
 }
-initScrollStory();
+initHomeExperience();
