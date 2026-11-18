@@ -2,7 +2,7 @@
  * Executed by Vercel during build, sequentially (avoid memory spikes).
  * Never expose BLOB_READ_WRITE_TOKEN through the site's client JavaScript.
  */
-import {put, head} from '@vercel/blob';
+import {put, head, BlobNotFoundError} from '@vercel/blob';
 import {createHash} from 'node:crypto';
 import {createReadStream,createWriteStream} from 'node:fs';
 import {mkdtemp,rm,stat} from 'node:fs/promises';
@@ -35,7 +35,7 @@ for(const entry of entries){
     if(saved.size===asset.size){console.log(`Already mirrored: ${pathname}`);continue}
     throw new Error(`Existing Blob size mismatch: ${pathname}`);
   }catch(error){
-    if(error.name!=='BlobNotFoundError'&&error.status!==404)throw error;
+    if(!(error instanceof BlobNotFoundError)&&error.name!=='BlobNotFoundError'&&!String(error.message||'').includes('requested blob does not exist')&&error.status!==404)throw error;
   }
   const response=await fetch(asset.browser_download_url,{
     headers:{'User-Agent':'HomeHub-Downloads-Mirror/1.0','Accept':'application/octet-stream'},
