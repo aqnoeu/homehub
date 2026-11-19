@@ -1,5 +1,5 @@
 import {head,getDownloadUrl} from '@vercel/blob';
-const tag='v2.0.24';
+const tag='v2.0.27';
 const files=Object.freeze({
   android:'Home-Android.apk',
   windows:'Home-Windows.zip',

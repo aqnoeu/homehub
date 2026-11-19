@@ -10,7 +10,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {pipeline} from 'node:stream/promises';
 
-const tag='v2.0.24';
+const tag='v2.0.27';
 const source='aqnoeu/home';
 const entries=[
   {name:'Home-Android.apk',type:'application/vnd.android.package-archive'},

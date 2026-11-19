@@ -8,7 +8,7 @@ arquivos em modo multipart para o Vercel Blob público conectado ao projeto.
 
 ## Versão espelhada
 
-- HOME v2.0.24
+- HOME v2.0.27
 - `Home-Android.apk`
 - `Home-Windows.zip` (arquivo ZIP; não é um instalador .exe direto)
 - `Home-Chrome-Extension.zip` (extensão HOME, não Home Writer)
